@@ -1,0 +1,128 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# install packages
+```{r}
+#install.packages("tidyverse",dependencies = TRUE)
+#install.packages("ggthemes",dependencies = TRUE)
+```
+
+# load packages
+```{r}
+library(tidyverse)
+library(ggthemes)
+```
+
+# rows and columns
+```{r}
+as4 = read_csv("assignment4.csv")
+
+nrow(as4)
+ncol(as4)
+
+# There are 3700 rows and 12 columns.
+```
+
+# unique participants and trials
+```{r}
+as4 %>% pull (subject) %>% unique()
+
+as4 %>%
+  group_by(subject) %>% 
+  count()
+
+# There were 37 subjects.
+# Each subject had 100 trials.
+```
+
+# Level of variables
+```{r}
+as4 = as4 %>%
+  mutate(prime_condition = as.factor(prime_condition), 
+         state = as.factor(state))
+
+levels (as4 %>% pull (prime_condition))
+
+levels (as4 %>% pull (state))
+
+# There are 4 levels of prime_condition: "both","phonological","semantic", and 'unrelated."
+# There are 4 levels of the state variable: "don't know","know","other", and "tip of tongue."
+```
+
+# subsets of columns
+```{r}
+prime_information = as4 %>%
+  select(subject, prime_condition)
+```
+
+# subsets of rows
+```{r}
+phonological = as4 %>%
+  filter(prime_condition=="phonological" & accuracy==1)
+```
+
+# summarizing accuracy per subject
+```{r}
+subject_acc = as4 %>%
+  group_by(subject) %>%
+  summarise(mean_acc = mean(accuracy))
+```
+
+# Summarizing accuracy per prime condition
+```{r}
+prime_acc = as4 %>%
+  group_by(prime_condition) %>%
+  summarise(mean_acc = mean(accuracy),
+            sd_acc = sd(accuracy))
+```
+
+# histogram of subject accuracy
+```{r}
+subject_acc %>%
+  ggplot(aes(x=mean_acc)) +
+  geom_histogram(binwidth = .2,
+                 fill = "tan", 
+                 color = "black",
+                 position = "identity") +
+  theme_few() + 
+  xlab("Mean Accuracy") +
+  ylab("Count") +
+  ggtitle("Histogram of Mean Accuracy")
+```
+
+# bar plot of prime condition
+```{r}
+prime_acc %>%
+  ggplot(aes(x = prime_condition, y = mean_acc)) +
+  geom_bar(fill = "pink", color = "blue", stat = "identity") +
+  theme_few() + 
+  xlab("Prime Condition") +
+  ylab("Mean Accuracy") +
+  ggtitle ("Mean Accuracy Across Prime Condition")
+```
+
+# Data interpretation
+```{r}
+# Yes, the type of prime influences accuracy in the trivia experiment. It seems like after a phonological prime condition, participants were significantly more likely to have an accurate response, compared to "both", "semantic", or "unrelated."
+```
+
+# Summarizing accuracy per prime condition and state
+```{r}
+state_prime_acc = as4 %>%
+  group_by(state, prime_condition) %>%
+  summarise(mean_acc = mean(accuracy))
+```
+
+# bar plot of prime condition and state
+```{r}
+state_prime_acc %>%
+  ggplot(aes(x = prime_condition, y = mean_acc, fill = state)) +
+  geom_col(position = "dodge") +
+  theme_few() +
+  labs(x = "Prime Condition", y = "Mean Accuracy", title = "Mean Accuracy Across Prime Condition and Reported States")
+```
+
+
+
